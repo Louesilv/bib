@@ -22,12 +22,22 @@ const option={
     url: 'https://guide.michelin.com/fr/fr/ile-de-france/paris/restaurant/kokoro',
     timeout:5000,
 };
+//delegate function 
 
+const parse = data => {
+    const $ = cheerio.load(data);
+    const name = $('body > main > div.restaurant-details > div.container > div > div.col-xl-4.order-xl-8.col-lg-5.order-lg-7.restaurant-details__aside > div.restaurant-details__heading.d-lg-none > h2').text();
+    const adresse = $('body > main > div.restaurant-details > div.container > div > div.col-xl-4.order-xl-8.col-lg-5.order-lg-7.restaurant-details__aside > div.restaurant-details__heading.d-lg-none > ul > li:nth-child(1)').text();
+  
+  
+    return {name, adresse};
+  };
 async function getHTML(options){
     const response = await axios(options);
     const {data, status,error} = response;
+
     if (status >= 200 && status < 300) {
-        return console.log(data);
+        return console.log(parse(data));
     }
     else{
         console.log(error)  
