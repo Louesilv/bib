@@ -1,6 +1,8 @@
 const axios = require('axios');
 const cheerio = require('cheerio');
 
+const bib = {'name':' ', 'experience':' '}
+
 /**
  * Parse webpage restaurant
  * @param  {String} data - html response
@@ -11,8 +13,10 @@ const parse = data => {
   const name = $('.section-main h2.restaurant-details__heading--title').text();
   const experience = $('#experience-section > ul > li:nth-child(2)').text();
 
+
   return {name, experience};
 };
+  
 
 /**
  * Scrape a given restaurant url
