@@ -32,9 +32,8 @@ async function scrapePage(url) {
     const option={
         'url': url ,
         'method' : 'POST',
-        /*
         'data': {'result': 1,
-                  'annuaire_mode': 'standard'}*/
+                  'annuaire_mode': 'standard'}
                 };
     
     const response = await axios(option);
@@ -57,6 +56,7 @@ scrapePage('https://www.https://www.maitresrestaurateurs.fr/annuaire/recherche')
  * Get all France located Bib Gourmand restaurants
  * @return {Array} restaurants
  */
+/*
 module.exports.get = () => {
   return [];
-};
+};*/
