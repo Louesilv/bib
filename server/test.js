@@ -32,6 +32,7 @@ const parse = data => {
   
     return {name, adresse};
   };
+
 async function getHTML(options){
     const response = await axios(options);
     const {data, status,error} = response;
@@ -51,3 +52,24 @@ axios ( {
     timeout:5000,
   }).then (réponse => console.log (réponse.data))
   .catch (erreur => console.log (erreur));*/
+
+
+  const parse2 = data => {
+    const $ = cheerio.load(data);
+    const url = $('').text();
+  
+  
+    return {name, adresse};
+  };
+  
+async function getHTML(options){
+    const response = await axios(options);
+    const {data, status,error} = response;
+
+    if (status >= 200 && status < 300) {
+        return console.log(parse(data));
+    }
+    else{
+        console.log(error)  
+    }
+}

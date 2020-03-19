@@ -8,42 +8,51 @@ const cheerio = require('cheerio');
 */ 
 const parse = data => {
   const $ = cheerio.load(data);
-  const name = $('#zoneAnnuaire_layout > div.row.annuaire_result > div.col-md-9 > div.annuaire_result_list > div.annuaire_single.row-31 > div.single_desc > div.single_libel').text();
-  const experience = $('#experience-section > ul > li:nth-child(2)').text();
 
+  var names = $('#zoneAnnuaire_layout > div.row.annuaire_result > div.col-md-9 > div.annuaire_result_list > div > div.single_desc > div.single_libel > a').text();
+  var adresses = $('#zoneAnnuaire_layout > div.row.annuaire_result > div.col-md-9 > div.annuaire_result_list > div> div.single_desc > div.single_details > div > div > div').get().map(x => $(x).text());
 
-  return {name, experience};
+  //var restaurant = {'name': name, 'adresse': adresse}
+  console.log(names,adresses);
 };
 
 
 /**
  * Scrape a given restaurant url
  * @param  {String}  url
- * @return {Object} restaurant
+
  */
-module.exports.scrapePage  = async url => {
 
-    const payload={ 'page' : 153,
-                    'request_id' : 'af6c29f98c729a0ca26f488dc550f73a'};
+//'request_id' : 'af6c29f98c729a0ca26f488dc550f73a'};
+//scrapePage('https://www.maitresrestaurateurs.fr/annuaire/ajax/loadresult');
+
+
+async function scrapePage(url) {
+
     const option={
-        'url': 'https://www.maitresrestaurateurs.fr/annuaire/ajax/loadresult',
+        'url': url ,
         'method' : 'POST',
-        'headers': {'content-type': ' application/x-www-form-urlencoded'}};
+        /*
+        'data': {'result': 1,
+                  'annuaire_mode': 'standard'}*/
+                };
     
-    const response = await axios(options);
-    const {data, status} = response;
-        console.log(data);
+    const response = await axios(option);
+    const {data, status,error} = response;
+        console.log(status);
 
 
-    if (status >= 200 && status < 300) {
-        return parse(data);
+    if (status >= 200 && status < 300 && !error) {
+      console.log(data);
+      //return parse(data);
+    }
+    else {
+      console.log(error);
     }
 
-    console.error(status);
-
-    return null;
+    //return null;
 };
-
+scrapePage('https://www.https://www.maitresrestaurateurs.fr/annuaire/recherche');
 /**
  * Get all France located Bib Gourmand restaurants
  * @return {Array} restaurants
