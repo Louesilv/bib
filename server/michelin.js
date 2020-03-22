@@ -1,5 +1,6 @@
 const axios = require('axios');
 const cheerio = require('cheerio');
+const fs = require('fs');
 
 /**
  * Get information about one restaurant 
@@ -130,7 +131,8 @@ module.exports.get = async() => {
   
   var list_URL = await getURL("https://guide.michelin.com/fr/fr/restaurants/bib-gourmand/page/");
   var bibs = await getInfoRestaurant(list_URL);
-  return bibs;
+  const json = JSON.stringify(bibs);
+  fs.writeFile("./bib-gourmand.json",json);
 };
 
 module.exports.get();
