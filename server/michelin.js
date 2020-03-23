@@ -113,13 +113,23 @@ async function GetAllInfoRestaurant(urls){
   {
     const rest = await getInfoOneRestaurant('https://guide.michelin.com'+urls[int]);
     console.log(int);
-    const json = JSON.stringify(rest);
-    bib_gourmand.push(json);
+    //const json = JSON.stringify(rest);
+    bib_gourmand.push(rest);
      
   } 
   return bib_gourmand;
 };
 
+async function Get(urL){
+  var urls = await GetAllURL(urL,[]);
+  var bib_gourmand = await GetAllInfoRestaurant(urls);
+
+  const Bibjson = JSON.stringify(bib_gourmand);
+  const File = fs.writeFile("./bib_gourmand.json",Bibjson,(err)=>{
+    if(err){console.log(err);}
+    console.log("Data written");}
+  );
+};
 
 /**
  * Get all France located Bib Gourmand restaurants
@@ -138,4 +148,4 @@ module.exports.get = async(urL) => {
   );
 };
 
-module.exports.get(url_search);
+Get(url_search);

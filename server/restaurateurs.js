@@ -109,8 +109,8 @@ async function GetAllInfoRestaurant(profils){
   {
       const rest = await GetInfoOneRestaurant('https://www.maitresrestaurateurs.fr'+profils[int]);
       console.log(int);
-      const json = JSON.stringify(rest);
-      maitres.push(json);      
+      //const json = JSON.stringify(rest);
+      maitres.push(rest);      
   } 
   return maitres;
 };
@@ -133,17 +133,15 @@ Get2(url_search);
  * @return {Array} restaurants
  */
 /*
-module.exports.get = (urL,liste) => {
-  var compt=1;
-  while(compt<5){
-    liste = GetInfo(urL,liste);
+module.exports.get = (urL) => {
+  var profils = await GetAllURL(urL,[]);
+  var maitres = await GetAllInfoRestaurant(profils);
 
-    console.log(liste);
-    //const json = JSON.stringify(liste);
-    //const File = fs.writeFile("./maitres.json",json);
-    compt+=1;
-  }
-  return [];
+  const Maitrejson = JSON.stringify(maitres);
+  const File = fs.writeFile("./maitres.json",Maitrejson,(err)=>{
+    if(err){console.log(err);}
+    console.log("Data written");}
+  );
 };
 
-File = module.exports.get(url_search,maitres); */
+module.exports.get(url_search); */
