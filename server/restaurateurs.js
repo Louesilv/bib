@@ -5,12 +5,12 @@ const fs = require('fs');
 
 const maitres=[];
 url_search = 'https://www.maitresrestaurateurs.fr/annuaire/ajax/loadresult';
+
 /**
  * Parse webpage restaurant
  * @param  {String} data - html response
  * @return {Object} restaurant
 */ 
-
 const parse = data => {
   const $ = cheerio.load(data);
   const info = $('#module_ep > div.ep-container.container > div > div > div.ep-content-left.col-md-8 > div > div.ep-section.ep-content-infos.row > div.ep-infos-txt').text().trim().split("\n");
@@ -25,6 +25,11 @@ const parse = data => {
   return restaurant;
   
 };
+/**
+ * Get Data from a page restaurant 
+ * @param  {String} urL - url from a restaurant
+ * @return {Object} restaurant
+*/ 
 async function GetInfoOneRestaurant(urL) {
 
   const option={
@@ -46,7 +51,11 @@ async function GetInfoOneRestaurant(urL) {
 };
 
 
-
+/**
+ * Get all restaurant for a given page 
+ * @param  profils - list of all the url inside a page 
+ * @return liste - list of restaurant for a page 
+*/ 
 async function GetInfoRestaurants(profils,liste) {
   for (int in profils)
   {
@@ -58,7 +67,12 @@ async function GetInfoRestaurants(profils,liste) {
 
 };
 
-
+/**
+ * Get all the url for a given page 
+ * @param  {String} urlS - url page
+ * @param  {String} PAGE - given page
+ * @return profils - list of all the url inside a page 
+*/ 
 async function ScrapePage(urlS,PAGE) {
   /*
   var DATA= new FormData();
@@ -106,7 +120,21 @@ async function Get(urL){
   );
 };
 
-Get(url_search);
+async function GetAllURL(urL){
+  var liste= [];
+  compt=1;
+  while(compt<138){
+    const profils =await ScrapePage(urL,compt);
+    console.log("PAGE: " + compt);
+    liste.push(profils);
+    compt+=1;
+  }
+  const File = fs.writeFile("./profils.json",liste,(err)=>{
+    if(err){console.log(err);}
+    console.log("liste written");}
+  );
+};
+GetAllURL(url_search);
 /*
  * Get all France located Bib Gourmand restaurants
  * @return {Array} restaurants
