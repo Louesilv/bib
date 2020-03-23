@@ -35,7 +35,6 @@ async function GetInfoOneRestaurant(urL) {
   const option={
     méthode: "get",
     url: urL,
-    timeout:5000,
   };
   const response = await axios(option);
   const {data, status,error} = response;
@@ -50,22 +49,6 @@ async function GetInfoOneRestaurant(urL) {
   return null;
 };
 
-
-/**
- * Get all restaurant for a given page 
- * @param  profils - list of all the url inside a page 
- * @return liste - list of restaurant for a page 
-*/ 
-async function GetInfoRestaurants(profils,liste) {
-  for (int in profils)
-  {
-      const rest = await GetInfoOneRestaurant('https://www.maitresrestaurateurs.fr'+profils[int]);
-      const json = JSON.stringify(rest);
-      liste.push(json);      
-  } 
-  return liste;
-
-};
 
 /**
  * Get all the url for a given page 
@@ -105,36 +88,46 @@ async function ScrapePage(urlS,PAGE) {
   }
 };
 
-async function Get(urL){
-  var liste= [];
-  compt=1;
-  while(compt<5){
-    const profils =await ScrapePage(urL,compt);
-    console.log("PAGE: " + compt);
-    liste = await GetInfoRestaurants(profils,liste);
-    compt+=1;
-  }
-  const File = fs.writeFile("./maitres.json",liste,(err)=>{
-    if(err){console.log(err);}
-    console.log("liste written");}
-  );
-};
 
-async function GetAllURL(urL){
-  var liste= [];
+async function GetAllURL(urL,liste){
   compt=1;
   while(compt<138){
     const profils =await ScrapePage(urL,compt);
     console.log("PAGE: " + compt);
-    liste.push(profils);
+    for (int in profils)
+      {
+        liste.push(profils[int]);      
+      }
     compt+=1;
   }
-  const File = fs.writeFile("./profils.json",liste,(err)=>{
+  return liste;
+};
+
+async function GetAllInfoRestaurant(profils){
+  var maitres=[];
+  for (int in profils)
+  {
+      const rest = await GetInfoOneRestaurant('https://www.maitresrestaurateurs.fr'+profils[int]);
+      console.log(int);
+      const json = JSON.stringify(rest);
+      maitres.push(json);      
+  } 
+  return maitres;
+};
+
+async function Get2(urL){
+
+  var profils = await GetAllURL(urL,[]);
+  var maitres = await GetAllInfoRestaurant(profils);
+
+  const Maitrejson = JSON.stringify(maitres);
+  const File = fs.writeFile("./maitres.json",Maitrejson,(err)=>{
     if(err){console.log(err);}
-    console.log("liste written");}
+    console.log("Data written");}
   );
 };
-GetAllURL(url_search);
+
+Get2(url_search);
 /*
  * Get all France located Bib Gourmand restaurants
  * @return {Array} restaurants
