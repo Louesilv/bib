@@ -2,6 +2,7 @@ const axios = require('axios');
 const cheerio = require('cheerio');
 const fs = require('fs');
 
+url_search= "https://guide.michelin.com/fr/fr/restaurants/bib-gourmand/page/";
 /**
  * Get information about one restaurant 
  * @param  {String} data - html response
@@ -11,13 +12,18 @@ const parse = data => {
   const $ = cheerio.load(data);
 
   var name = $('body > main > div.restaurant-details > div.container > div > div.col-xl-4.order-xl-8.col-lg-5.order-lg-7.restaurant-details__aside > div.restaurant-details__heading.d-lg-none > h2').text();
-  var adresse = $('body > main > div.restaurant-details > div.container > div > div.col-xl-4.order-xl-8.col-lg-5.order-lg-7.restaurant-details__aside > div.restaurant-details__heading.d-lg-none > ul > li:nth-child(1)').text();
+  var adresse = $('body > main > div.restaurant-details > div.container > div > div.col-xl-4.order-xl-8.col-lg-5.order-lg-7.restaurant-details__aside > div.restaurant-details__heading.d-lg-none > ul > li:nth-child(1)').text().split(",");
+  var tel=$('body > main > div.restaurant-details > div.container > div > div.col-xl-8.col-lg-7 > section:nth-child(4) > div.row > div:nth-child(1) > div > div:nth-child(1) > div > div > span.flex-fill').text();
+  var site =$('body > main > div.restaurant-details > div.container > div > div.col-xl-8.col-lg-7 > section:nth-child(4) > div.row > div:nth-child(1) > div > div.collapse__block-item.link-item > a').attr("href");
+  //var mail =$().text();
+  
+  var restaurant = {'name': name,
+                  'adresse':{"street": adresse[0],"code":adresse[2],"city":adresse[1]},
+                  'siteWEB':site,
+                  'telephone':tel,
+                  'mail':""};
 
-  var restaurant = {'name': name, 'adresse': adresse};
-  //console.log(restaurant);
   return restaurant;
-
-
 };
   
 
@@ -40,7 +46,6 @@ async function getInfoOneRestaurant(urL) {
   if (status >= 200 && status < 300) {
 
     const rest = await parse(data);
-    //console.log(rest);
     return rest;
   }
   else{
@@ -49,90 +54,88 @@ async function getInfoOneRestaurant(urL) {
   return null;
 };
 
-/*TEST 
-const promiseTest=getInfoOneRestaurant("https://guide.michelin.com/fr/fr/ile-de-france/paris/restaurant/etsi");
-R=promiseTest.then(value =>{return value;});
-console.log(R);*/
 
-async function getInfoRestaurant(URLS) {
-  const bibs=[];
-  for (url in URLS)
-  {
-    //console.log(URLS[url]);
-    if(URLS[url]!= "/fr/fr/subscribe")
+
+async function getURL(urL,page){
+
+  var option={
+    méthode: "get",
+    url: urL+ page.toString(),
+    timeout:5000,
+  };
+
+  const response = await axios(option);
+  const {data, status,error} = response;
+
+  if (status >= 200 && status < 300 && !error ) {
+    const $ = cheerio.load(data);
+    
+    //All bib per page
+    /*  
+    const tableau = $('body > main > section.section-main.search-results.search-listing-result > div > div > div.row.restaurant__list-row.js-toggle-result.js-geolocation.js-restaurant__list_items');
+    tableau.each(element =>{
+      console.log($(element,'div > a').data('href'))
+    });
+    */
+    var URLS= await $('body > main > section.section-main.search-results.search-listing-result > div > div > div.row.restaurant__list-row.js-toggle-result.js-geolocation.js-restaurant__list_items > div > div > a').get().map(x => $(x).attr('href'));
+    /*for (url in URLS)
+    {
+      URL.push(URLS[url]);
+    }*/
+    return URLS;
+  }
+  else{
+    console.log(error);
+  }
+
+
+  return null;
+}
+async function GetAllURL(urL,liste){
+  compt=1;
+  while(compt<16){
+    const urls =await getURL(urL,compt);
+    console.log("PAGE: " + compt);
+    for (int in urls)
       {
-        const rest = await getInfoOneRestaurant('https://guide.michelin.com'+URLS[url]);
-        bibs.push(rest);
+        if(urls[int]!= "/fr/fr/subscribe")
+          {liste.push(urls[int])};      
       }
-  } 
-  return bibs;
-};
-
-//const bibs =getInfoRestaurantPage([]);
-//console.log(bibs);
-
-async function getURL(urL){
-
-  var URL=[]
-  var compt = 1
-  while(compt<3)
-  {
-    var option={
-      méthode: "get",
-      url: urL+ compt.toString(),
-      timeout:5000,
-    };
-    console.log(option.url);
-
-    const response = await axios(option);
-    const {data, status,error} = response;
-
-    if (status >= 200 && status < 300 && !error ) {
-      const $ = cheerio.load(data);
-      
-      //All bib per page
-      /*  
-      const tableau = $('body > main > section.section-main.search-results.search-listing-result > div > div > div.row.restaurant__list-row.js-toggle-result.js-geolocation.js-restaurant__list_items');
-      tableau.each(element =>{
-        console.log($(element,'div > a').data('href'))
-      });
-      */
-      var URLS= await $('body > main > section.section-main.search-results.search-listing-result > div > div > div.row.restaurant__list-row.js-toggle-result.js-geolocation.js-restaurant__list_items > div > div > a').get().map(x => $(x).attr('href'));
-      for (url in URLS)
-      {
-        URL.push(URLS[url]);
-      }
-    }
-    else{
-      console.log(error);
-    }
     compt+=1;
   }
-  return URL;
-}
-
-/*
-p1 = getURL("https://guide.michelin.com/fr/fr/restaurants/bib-gourmand/page/");
-URL =p1.then(value =>{return value;});
-console.log(URL);
+  return liste;
+};
 
 
-const p2 = getInfoRestaurant(URL);
-bibs=p2.then(value =>{return value;});
-console.log(bibs);
-*/
+async function GetAllInfoRestaurant(urls){
+  var bib_gourmand=[];
+  for (int in urls)
+  {
+    const rest = await getInfoOneRestaurant('https://guide.michelin.com'+urls[int]);
+    console.log(int);
+    const json = JSON.stringify(rest);
+    bib_gourmand.push(json);
+     
+  } 
+  return bib_gourmand;
+};
+
 
 /**
  * Get all France located Bib Gourmand restaurants
  * @return {Array} restaurants
  */
 
-module.exports.get = async() => {
+module.exports.get = async(urL) => {
   
-  var list_URL = await getURL("https://guide.michelin.com/fr/fr/restaurants/bib-gourmand/page/");
-  var bibs = await getInfoRestaurant(list_URL);
-  const json = JSON.stringify(bibs);
-  fs.writeFile("./bib-gourmand.json",json);
+  var urls = await GetAllURL(urL,[]);
+  var bib_gourmand = await GetAllInfoRestaurant(urls);
+
+  const Bibjson = JSON.stringify(bib_gourmand);
+  const File = fs.writeFile("./bib_gourmand.json",Bibjson,(err)=>{
+    if(err){console.log(err);}
+    console.log("Data written");}
+  );
 };
 
-module.exports.get();
+module.exports.get(url_search);
